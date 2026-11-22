@@ -2302,9 +2302,11 @@ function gpPoll(dt){let g=null;try{for(const q of (navigator.getGamepads&&naviga
 function gpLoop(t){const dt=GP.lt?Math.min(.05,(t-GP.lt)/1000):.016;GP.lt=t;try{gpPoll(dt);if(!tLive())ovDraw();}catch(e){}if(GP.run)requestAnimationFrame(gpLoop);}
 try{addEventListener('gamepadconnected',e=>{if(!GP.seen)popups.push({s:'🎮 Controller connected',sub:'A jump · X attack · B dash · Y hook · LB pound · RB item · Start pause',t:4});GP.seen=1;if(!GP.run){GP.run=true;requestAnimationFrame(gpLoop);}});
   addEventListener('gamepaddisconnected',()=>{gpRelease();GP.cur=false;popups.push({s:'Controller disconnected',t:2});});}catch(e){}
-const PSETBTN={x:W/2-80,y:H/2+96,w:160,h:40};
+const PSETBTN={x:W/2-80,y:H/2+96,w:160,h:40},PLEAVE={x:W/2-80,y:H/2+144,w:160,h:40};
+function leaveGame(){if(mode==='battle')leaveBattle();else if(mode==='rush')leaveRush();else if(/^(free|race|daily|expedition)$/.test(mode))leaveMode();else{if(p)p.revived=1;state='play';die('You left the run');}}
 function drawTouch(){if(state==='pause'&&!OV.el){const h=inR(PSETBTN);ctx.fillStyle=h?'#4a3fa0':'rgba(40,30,90,.9)';rr(PSETBTN.x,PSETBTN.y,PSETBTN.w,PSETBTN.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.textAlign='center';ctx.fillText('⚙ SETTINGS (O)',W/2,PSETBTN.y+26);
-    if(touchOn()){ctx.font='14px Trebuchet MS';ctx.fillText('tap ▶ to resume',W/2,PSETBTN.y+64);}}
+    {const h2=inR(PLEAVE);ctx.fillStyle=h2?'#a03f4a':'rgba(110,30,40,.9)';rr(PLEAVE.x,PLEAVE.y,PLEAVE.w,PLEAVE.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.fillText('🚪 LEAVE GAME',W/2,PLEAVE.y+26);}
+    if(touchOn()){ctx.font='14px Trebuchet MS';ctx.fillText('tap ▶ to resume',W/2,PLEAVE.y+64);}}
   ovDraw();
   if(ISTOUCH&&innerHeight>innerWidth&&state!=='play'){ctx.fillStyle='rgba(0,0,0,.75)';rr(W/2-230,H/2-40,460,80,16);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 22px Trebuchet MS';ctx.textAlign='center';ctx.fillText('↻ Turn your phone sideways',W/2,H/2-4);ctx.font='14px Trebuchet MS';ctx.fillText('the game fills the whole screen in landscape',W/2,H/2+22);}
   if(SET.fps){ctx.fillStyle='#7dffa0';ctx.font='bold 12px Trebuchet MS';ctx.textAlign='left';ctx.fillText(Math.round(FPSA)+' FPS',W-70,H-8);}}
@@ -2312,6 +2314,7 @@ function drawTouch(){if(state==='pause'&&!OV.el){const h=inR(PSETBTN);ctx.fillSt
 addEventListener('mousedown',e=>{if(OV.el||e.target!==cv)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;let hit=false;
   if((state==='menu'||state==='dead')&&!PROF.open&&!MSEL&&!emWheel&&!modal){if(inRxy(PASSTAB,x,y)){passOpen();hit=true;}else if(inRxy(SETBTN,x,y)){setOpen();hit=true;}else if(inRxy(CHBTN,x,y)){chatStart();hit=true;}}
   else if(state==='pause'&&!modal&&inRxy(PSETBTN,x,y)){setOpen();hit=true;}
+  else if(state==='pause'&&!modal&&inRxy(PLEAVE,x,y)){leaveGame();hit=true;}
   if(hit){sfx('click');e.stopImmediatePropagation();e.preventDefault();}},true);
 addEventListener('keydown',e=>{if(e.code==='KeyO'&&!e.repeat&&!chatOpen&&!nameEdit&&!OV.el&&!PROF.open&&!modal&&state!=='shop')setOpen();});
 
