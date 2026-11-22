@@ -2402,7 +2402,8 @@ function update(dt){if(DLG&&state==='play'){dlgTick(dt);return;}lavaTick(dt);tea
 
   // jumps
   if(p.ground)coyote=COYOTE;else coyote-=dt;
-  if(p.wallDir&&!p.ground)wallCoyote=0.1;else wallCoyote-=dt;
+  if(p.wallDir&&!p.ground)wallCoyote=0.16;else wallCoyote-=dt;
+  if(typeof JS!=='undefined'&&JS&&JS.held.has('ArrowUp')&&p.wallDir&&!p.ground){if(!p.wjAuto){jumpBuffer=.13;p.wjAuto=1;}}else if(!p.wallDir)p.wjAuto=0;
   jumpBuffer-=dt;
   if(mode==='expedition')expPhys(dt,L,R,D,hold);
   let orb=null;
