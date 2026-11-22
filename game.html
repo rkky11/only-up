@@ -2232,12 +2232,13 @@ const TT={};let TFS=0,JS=null;
 function jsKeys(j){const dx=j.x-j.ox,dy=j.y-j.oy,dz=j.R*.28,want=new Set();if(dx<-dz)want.add('ArrowLeft');else if(dx>dz)want.add('ArrowRight');if(dy>j.R*.55&&Math.abs(dy)>Math.abs(dx)*.8)want.add('ArrowDown');
   for(const c of j.held)if(!want.has(c)){kEv('keyup',c);j.held.delete(c);}for(const c of want)if(!j.held.has(c)){kEv('keydown',c);j.held.add(c);}}
 let JA=null,JAF=0;
-function jaDir(){if(!JA)return null;const dx=JA.x-JA.ox,dy=JA.y-JA.oy,d=Math.hypot(dx,dy);return d<JA.R*.25?null:[dx/d,dy/d];}
+function jaDir(){if(!JA)return null;const dx=JA.x-JA.ox,dy=JA.y-JA.oy,d=Math.hypot(dx,dy);if(d<JA.R*.25)return null;const v=[dx/d,dy/d],s=jaNearest(v);return s||v;}
 function jaAim(dv){if(!p||!dv)return;mouse.x=p.x+PW/2-camX+dv[0]*140;mouse.y=p.y-20-camY+dv[1]*140;aimMouse=true;}
 function jaTick(){if(JA){const dv=jaDir();if(dv)jaAim(dv);}if(JAF){jaAim(JAF.d);if(performance.now()>JAF.t){mouseDown=false;JAF=0;}}}
 function jaEnd(){if(!JA)return;const dv=jaDir();if(dv){jaAim(dv);mouseDown=true;JAF={d:dv,t:performance.now()+90};}else{const tg=jaNearest();if(tg){jaAim(tg);mouseDown=true;JAF={d:tg,t:performance.now()+90};}else{aimMouse=false;kEv('keydown','KeyJ');setTimeout(()=>kEv('keyup','KeyJ'),90);}}JA=null;}
-function jaNearest(){if(!p)return null;const cx=p.x+PW/2,cy=p.y-20;let bd=520,best=null;const tr=(x,y)=>{const d=Math.hypot(x-cx,y-cy);if(d<bd&&d>1){bd=d;best=[(x-cx)/d,(y-cy)/d];}};
-  try{for(const e of enemies)if(!e.dead)tr(e.x,e.y);}catch(er){}try{if(canPvp())for(const [id,o] of foes())tr(o.x+PW/2,o.y-18);}catch(er){}return best;}
+let JTP=null;function jaNearest(v){if(!p)return null;if(!v)JTP=null;const cx=p.x+PW/2,cy=p.y-20;let bs=1e9,best=null;const tr=(x,y)=>{const d=Math.hypot(x-cx,y-cy);if(d<1||d>(v?900:800))return;const u=[(x-cx)/d,(y-cy)/d];let sc=d;if(v){const dot=u[0]*v[0]+u[1]*v[1];if(dot<.82)return;sc=d*(2-dot);}if(sc<bs){bs=sc;best=u;if(!v)JTP=[x,y];}};
+  try{for(const e of enemies)if(!e.dead)tr(e.x,e.y);}catch(er){}try{if(bossR&&bossR.e&&!bossR.e.dead)tr(bossR.e.x,bossR.e.y);}catch(er){}try{if(canPvp())for(const [id,o] of foes())tr(o.x+PW/2,o.y-18);}catch(er){}return best;}
+function jaReticle(){if(state!=='play'||!touchOn()||!p)return;jaNearest();if(!JTP)return;const x=JTP[0]-camX,y=JTP[1]-camY,t=performance.now()/1000,r=22+Math.sin(t*6)*3;ctx.save();ctx.strokeStyle='rgba(255,80,80,.85)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();for(let i=0;i<4;i++){const a=i*Math.PI/2+t;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*(r-6),y+Math.sin(a)*(r-6));ctx.lineTo(x+Math.cos(a)*(r+7),y+Math.sin(a)*(r+7));ctx.stroke();}ctx.restore();}
 function jsEnd(){if(!JS)return;for(const c of JS.held)kEv('keyup',c);JS=null;}
 function kEv(t,code){try{window.dispatchEvent(new KeyboardEvent(t,{code,key:code==='Space'?' ':code==='Escape'?'Escape':code==='Enter'?'Enter':code.startsWith('Arrow')?code:code.startsWith('Shift')?'Shift':code.replace('Key','').toLowerCase(),bubbles:true}));}catch(e){}}
 function tPos(t){const r=tRect();return{x:(t.clientX-r.left)/r.width*W,y:(t.clientY-r.top)/r.height*H};}
@@ -2259,7 +2260,9 @@ document.addEventListener('touchmove',e=>{if(!tMine(e))return;e.preventDefault()
   if(o.m||(o.b&&(o.b.k==='KeyT'||o.b.k==='KeyE'))){const q=tPos(t);mouse.x=q.x;mouse.y=q.y;}
   else if(o.b&&/^Arrow(Left|Right)$/.test(o.b.k)){const n=tHitS(t.clientX,t.clientY);if(n&&n.k&&/^Arrow(Left|Right)$/.test(n.k)&&n.k!==o.b.k){kEv('keyup',o.b.k);kEv('keydown',n.k);o.b=n;}}}},{passive:false});
 const tEnd=e=>{let any=false;for(const t of e.changedTouches){const o=TT[t.identifier];if(!o)continue;any=true;delete TT[t.identifier];if(o.js){jsEnd();continue;}if(o.ja){jaEnd();continue;}if(o.b&&o.b.k==='KeyE'&&wheel&&wheelHov<0){wheel=false;kEv('keyup','KeyE');try{const L=WL();if(L.length>1)pickW(L[(L.indexOf(p.wpn)+1)%L.length]);}catch(er){}continue;}if(o.b)kEv('keyup',o.b.k);else{try{window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));}catch(er){}mouseDown=false;}}if(any&&e.cancelable)e.preventDefault();};
-document.addEventListener('touchend',tEnd,{passive:false});document.addEventListener('touchcancel',tEnd,{passive:false});}catch(e){}
+document.addEventListener('touchend',tEnd,{passive:false});
+let TMB=null;document.addEventListener('mousedown',e=>{if(!e.isTrusted||e.button!==0)return;const b=tHitS(e.clientX,e.clientY);if(!b)return;e.preventDefault();e.stopImmediatePropagation();if(b.act){b.act();return;}if(b.k==='KeyT'||b.k==='KeyE'){const q=tPos(e);mouse.x=q.x;mouse.y=q.y;}kEv('keydown',b.k);TMB=b;},true);
+document.addEventListener('mouseup',e=>{if(!TMB)return;const b=TMB;TMB=null;e.stopImmediatePropagation();if(b.k==='KeyE'&&wheel&&wheelHov<0){wheel=false;kEv('keyup','KeyE');try{const L=WL();if(L.length>1)pickW(L[(L.indexOf(p.wpn)+1)%L.length]);}catch(er){}return;}kEv('keyup',b.k);},true);document.addEventListener('touchcancel',tEnd,{passive:false});}catch(e){}
 function ovDraw(){const showT=tLive(),showC=GP.cur&&GP.menu&&GP.cx!=null;if(!showT&&!showC&&!TCV)return;const c=tOv();if(!c)return;
   const d=Math.min(2,window.devicePixelRatio||1),vw=innerWidth,vh=innerHeight;if(TCV.width!==Math.round(vw*d)||TCV.height!==Math.round(vh*d)){TCV.width=Math.round(vw*d);TCV.height=Math.round(vh*d);TCV.style.width=vw+'px';TCV.style.height=vh+'px';}
   c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,TCV.width,TCV.height);c.setTransform(d,0,0,d,0,0);
@@ -2304,7 +2307,7 @@ try{addEventListener('gamepadconnected',e=>{if(!GP.seen)popups.push({s:'🎮 Con
   addEventListener('gamepaddisconnected',()=>{gpRelease();GP.cur=false;popups.push({s:'Controller disconnected',t:2});});}catch(e){}
 const PSETBTN={x:W/2-80,y:H/2+96,w:160,h:40},PLEAVE={x:W/2-80,y:H/2+144,w:160,h:40};
 function leaveGame(){if(mode==='battle')leaveBattle();else if(mode==='rush')leaveRush();else if(/^(free|race|daily|expedition)$/.test(mode))leaveMode();else{if(p)p.revived=1;state='play';die('You left the run');}}
-function drawTouch(){if(state==='pause'&&!OV.el){const h=inR(PSETBTN);ctx.fillStyle=h?'#4a3fa0':'rgba(40,30,90,.9)';rr(PSETBTN.x,PSETBTN.y,PSETBTN.w,PSETBTN.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.textAlign='center';ctx.fillText('⚙ SETTINGS (O)',W/2,PSETBTN.y+26);
+function drawTouch(){try{jaReticle();}catch(e){}if(state==='pause'&&!OV.el){const h=inR(PSETBTN);ctx.fillStyle=h?'#4a3fa0':'rgba(40,30,90,.9)';rr(PSETBTN.x,PSETBTN.y,PSETBTN.w,PSETBTN.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.textAlign='center';ctx.fillText('⚙ SETTINGS (O)',W/2,PSETBTN.y+26);
     {const h2=inR(PLEAVE);ctx.fillStyle=h2?'#a03f4a':'rgba(110,30,40,.9)';rr(PLEAVE.x,PLEAVE.y,PLEAVE.w,PLEAVE.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.fillText('🚪 LEAVE GAME',W/2,PLEAVE.y+26);}
     if(touchOn()){ctx.font='14px Trebuchet MS';ctx.fillText('tap ▶ to resume',W/2,PLEAVE.y+64);}}
   ovDraw();
