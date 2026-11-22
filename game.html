@@ -2220,8 +2220,9 @@ function tButsS(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),L=r
     {k:'ShiftLeft',x:bx+34*k,y:by-84*k,r:27*k,l:'DASH'},{k:'KeyQ',x:bx-34*k,y:by-84*k,r:27*k,l:ex?'SWAP':'POUND'},
     {k:'Space',x:bx-34*k,y:by-144*k,r:25*k,l:'HOOK'},{k:ex?'KeyF':'KeyG',x:bx+34*k,y:by-144*k,r:25*k,l:ex?'USE':'ITEM'}];
   const U=[{k:'Escape',l:'⏸'},{act:chatStart,l:'💬'},{k:'KeyT',l:'😀'}];
-  U.forEach((u,i)=>{u.r=21*k;if(wL){u.x=ax+(i-1)*Math.min(48*k,L/3);u.y=62*k;}else{u.x=r.left+r.width-28*k;u.y=r.top+r.height*.36+i*44*k;}B.push(u);});
-  if(ex||(typeof inParty==='function'&&inParty()))B.push({k:'KeyV',x:bx,y:by-198*k,r:23*k,l:'TEAM'});
+  U.forEach((u,i)=>{u.r=25*k;if(wL){u.x=Math.max(ax,u.r+26);u.y=58*k+i*56*k;}else{u.x=r.left+r.width-32*k-i*58*k;u.y=r.top+36*k;}B.push(u);});
+  if(ex||(typeof inParty==='function'&&inParty()))B.push({k:'KeyV',x:bx-34*k,y:by-198*k,r:23*k,l:'TEAM'});
+  if(!ex&&p&&p.owned&&p.owned.length>1)B.push({k:'KeyE',x:bx+34*k,y:by-200*k,r:25*k,l:'WEAPON',t0:0});
   if(state==='pause'){const pb=B.find(b=>b.k==='Escape'),o=[Object.assign({},pb,{l:'▶'})];if(/^(battle|rush|free|race|daily|expedition)$/.test(mode))o.push({k:'KeyM',x:pb.x,y:pb.y+(wL?0:46*k),r:pb.r,l:'EXIT'});if(wL&&o[1])o[1].x=pb.x+80*k;return o;}
   return B;}
 function tAtkHome(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),R2=vw-(r.left+r.width),k=Math.max(.75,Math.min(1.35,Math.min(vw,vh)/400))*(SET.tsize||1),wR=R2>=100*k;return{x:wR?vw-R2/2:r.left+r.width-82*k,y:vh-66*k,R:50*k,k};}
@@ -2245,17 +2246,17 @@ try{cv.style.touchAction='none';
 const tMine=e=>{const g=e.target;return g===cv||g===document.body||g===document.documentElement||g===TCV;};
 document.addEventListener('touchstart',e=>{if(!tMine(e))return;e.preventDefault();
   for(const t of e.changedTouches){const b=tHitS(t.clientX,t.clientY),q=tPos(t);
-    if(b){if(b.act){b.act();continue;}if(b.k==='KeyT'){mouse.x=q.x;mouse.y=q.y;}kEv('keydown',b.k);TT[t.identifier]={b};}
+    if(b){if(b.act){b.act();continue;}if(b.k==='KeyT'||b.k==='KeyE'){mouse.x=q.x;mouse.y=q.y;}kEv('keydown',b.k);TT[t.identifier]={b,t0:performance.now()};}
     else if(state==='play'&&tLive()&&!JA&&(()=>{const a=tAtkHome();return Math.hypot(t.clientX-a.x,t.clientY-a.y)<a.R+18;})()){const a=tAtkHome();JA={id:t.identifier,ox:a.x,oy:a.y,x:t.clientX,y:t.clientY,R:a.R};TT[t.identifier]={ja:1};}
-    else if(state==='play'&&tLive()&&!JS&&t.clientX<(innerWidth||W)*.42){const h=tJsHome();JS={id:t.identifier,ox:t.clientX,oy:t.clientY,x:t.clientX,y:t.clientY,R:h.R,held:new Set()};TT[t.identifier]={js:1};}
-    else if(state==='play'&&tLive()&&!(typeof DLG!=='undefined'&&DLG)&&!(mode==='race'&&RACE&&RACE.st==='lobby')&&!(q.x>WBOX.x&&q.x<WBOX.x+WBOX.w&&q.y>WBOX.y&&q.y<WBOX.y+WBOX.h)&&!wmenu){kEv('keydown','ArrowUp');TT[t.identifier]={b:{k:'ArrowUp'}};}
+    else if(state==='play'&&tLive()&&!JS&&t.clientX<(innerWidth||W)*.42&&t.clientY>(innerHeight||H)*.38){const h=tJsHome();JS={id:t.identifier,ox:t.clientX,oy:t.clientY,x:t.clientX,y:t.clientY,R:h.R,held:new Set()};TT[t.identifier]={js:1};}
+    else if(state==='play'&&tLive()&&!wheel&&!emWheel&&!(typeof DLG!=='undefined'&&DLG)&&!(mode==='race'&&RACE&&RACE.st==='lobby')&&!(q.x>WBOX.x&&q.x<WBOX.x+WBOX.w&&q.y>WBOX.y&&q.y<WBOX.y+WBOX.h)&&!wmenu){kEv('keydown','ArrowUp');TT[t.identifier]={b:{k:'ArrowUp'}};}
     else if(e.target===cv){mouse.x=q.x;mouse.y=q.y;aimMouse=true;TT[t.identifier]={m:1};cv.dispatchEvent(new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY,button:0,bubbles:true}));}}},{passive:false});
 document.addEventListener('touchmove',e=>{if(!tMine(e))return;e.preventDefault();for(const t of e.changedTouches){const o=TT[t.identifier];if(!o)continue;
   if(o.ja&&JA){JA.x=t.clientX;JA.y=t.clientY;continue;}
   if(o.js&&JS){let dx=t.clientX-JS.ox,dy=t.clientY-JS.oy;const d=Math.hypot(dx,dy);if(d>JS.R){JS.ox+=dx*(1-JS.R/d);JS.oy+=dy*(1-JS.R/d);}JS.x=t.clientX;JS.y=t.clientY;jsKeys(JS);continue;}
-  if(o.m||(o.b&&o.b.k==='KeyT')){const q=tPos(t);mouse.x=q.x;mouse.y=q.y;}
+  if(o.m||(o.b&&(o.b.k==='KeyT'||o.b.k==='KeyE'))){const q=tPos(t);mouse.x=q.x;mouse.y=q.y;}
   else if(o.b&&/^Arrow(Left|Right)$/.test(o.b.k)){const n=tHitS(t.clientX,t.clientY);if(n&&n.k&&/^Arrow(Left|Right)$/.test(n.k)&&n.k!==o.b.k){kEv('keyup',o.b.k);kEv('keydown',n.k);o.b=n;}}}},{passive:false});
-const tEnd=e=>{let any=false;for(const t of e.changedTouches){const o=TT[t.identifier];if(!o)continue;any=true;delete TT[t.identifier];if(o.js){jsEnd();continue;}if(o.ja){jaEnd();continue;}if(o.b)kEv('keyup',o.b.k);else{try{window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));}catch(er){}mouseDown=false;}}if(any&&e.cancelable)e.preventDefault();};
+const tEnd=e=>{let any=false;for(const t of e.changedTouches){const o=TT[t.identifier];if(!o)continue;any=true;delete TT[t.identifier];if(o.js){jsEnd();continue;}if(o.ja){jaEnd();continue;}if(o.b&&o.b.k==='KeyE'&&wheel&&wheelHov<0){wheel=false;kEv('keyup','KeyE');try{const L=WL();if(L.length>1)pickW(L[(L.indexOf(p.wpn)+1)%L.length]);}catch(er){}continue;}if(o.b)kEv('keyup',o.b.k);else{try{window.dispatchEvent(new MouseEvent('mouseup',{bubbles:true}));}catch(er){}mouseDown=false;}}if(any&&e.cancelable)e.preventDefault();};
 document.addEventListener('touchend',tEnd,{passive:false});document.addEventListener('touchcancel',tEnd,{passive:false});}catch(e){}
 function ovDraw(){const showT=tLive(),showC=GP.cur&&GP.menu&&GP.cx!=null;if(!showT&&!showC&&!TCV)return;const c=tOv();if(!c)return;
   const d=Math.min(2,window.devicePixelRatio||1),vw=innerWidth,vh=innerHeight;if(TCV.width!==Math.round(vw*d)||TCV.height!==Math.round(vh*d)){TCV.width=Math.round(vw*d);TCV.height=Math.round(vh*d);TCV.style.width=vw+'px';TCV.style.height=vh+'px';}
