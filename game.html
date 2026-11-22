@@ -2075,7 +2075,9 @@ function setHtml(){const row=(l,c)=>'<div style="display:flex;align-items:center
   '<br><b style="color:#ffd23f">GRAPHICS</b>'+row('Glow effects',tg('glow',1,'On')+tg('glow',0,'Off (faster)'))+row('Particles',tg('fx',1,'High')+tg('fx',0,'Low'))+row('Screen shake',tg('shake',1,'On')+tg('shake',0,'Off'))+row('Show FPS',tg('fps',1,'On')+tg('fps',0,'Off'))+row('Best-run ghost',B('ghost:1','On',GH.show)+B('ghost:0','Off',!GH.show))+
   '<br><b style="color:#ffd23f">CONTROLS</b>'+row('Touch buttons',tg('touch','auto','Auto')+tg('touch','on','On')+tg('touch','off','Off'))+row('Button size',tg('tsize',.85,'Small')+tg('tsize',1,'Normal')+tg('tsize',1.2,'Big'))+
   '<div style="font-size:12px;color:#bdb6ee;line-height:1.7;margin:6px 0 4px">A/D or ←/→ move · W/↑ jump · S/↓ slide/drop · Shift dash · Space grapple · Q ground pound · J/F or click attack · E weapons · G item · T emotes · V team move · Enter or / chat · P pause · O settings · H help<br>🎮 Controller: stick/D-pad move · A jump · X attack · B dash · Y or RT hook · LB pound · RB item · LT team · Start pause · in menus the stick moves a pointer, A clicks, B goes back</div>'+
-  '<br><b style="color:#ffd23f">LINK YOUR DEVICES</b>'+acctHtml();}
+  winAppHtml()+'<br><b style="color:#ffd23f">LINK YOUR DEVICES</b>'+acctHtml();}
+function winAppHtml(){try{let inApp=false;try{inApp=!!(window.ONLYUP_APP||(window.parent&&window.parent.ONLYUP_APP)||window.NL_VERSION);}catch(e){}if(inApp||!/Windows/i.test(navigator.userAgent||''))return'';
+  return '<br><b style="color:#ffd23f">WINDOWS APP</b><div style="padding:8px 0"><a href="https://rkky11.github.io/only-up/OnlyUp-Windows.zip" target="_blank" rel="noopener" download="OnlyUp-Windows.zip" style="display:inline-block;padding:8px 16px;border-radius:10px;background:linear-gradient(135deg,#7b6cff,#4a3bd1);color:#fff;font-weight:bold;text-decoration:none">⬇ Get the Only Up app</a><div style="font-size:12px;color:#bdb6ee;margin-top:6px">Unzip it and open OnlyUp.exe. It always runs the newest version.</div></div>';}catch(e){return'';}}
 // pass + locker + badges
 function passOpen(t){OV.tab=t||'pass';ovOpen(passHtml);}
 function passHtml(){const t=OV.tab,tabs='<div style="display:flex;gap:6px;margin-bottom:12px">'+B('tab:pass','⭐ Pass',t==='pass')+B('tab:locker','🎒 Locker',t==='locker')+B('tab:badges','🏆 Badges',t==='badges')+'</div>';
@@ -2214,17 +2216,19 @@ function tRect(){let r={left:0,top:0,width:W,height:H};try{const q=cv.getBoundin
 function tButsS(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),L=r.left,R=vw-(r.left+r.width),ex=mode==='expedition';
   const k=Math.max(.75,Math.min(1.35,Math.min(vw,vh)/400))*(SET.tsize||1),wL=L>=100*k,wR=R>=100*k;
   const ax=wL?L/2:r.left+80*k,ay=vh-64*k,bx=wR?vw-R/2:r.left+r.width-82*k,by=vh-66*k;
-  const B=[{k:'ArrowLeft',x:ax-40*k,y:ay,r:34*k,l:'◀'},{k:'ArrowRight',x:ax+40*k,y:ay,r:34*k,l:'▶'},{k:'ArrowDown',x:ax,y:ay-68*k,r:26*k,l:'▼'},
-    {k:'ArrowUp',x:bx,y:by,r:42*k,l:'JUMP'},{k:'KeyJ',x:bx-34*k,y:by-84*k,r:27*k,l:'⚔'},{k:'ShiftLeft',x:bx+34*k,y:by-84*k,r:27*k,l:'DASH'},
+  const B=[{k:'ArrowLeft',x:ax-40*k,y:ay,r:34*k,l:'◀'},{k:'ArrowRight',x:ax+40*k,y:ay,r:34*k,l:'▶'},
+    {k:'ArrowUp',x:bx,y:by,r:42*k,l:'JUMP'},{k:'ArrowDown',x:bx-100*k,y:by+10*k,r:30*k,l:'SLIDE'},{k:'KeyJ',x:bx-34*k,y:by-84*k,r:27*k,l:'⚔'},{k:'ShiftLeft',x:bx+34*k,y:by-84*k,r:27*k,l:'DASH'},
     {k:'Space',x:bx-34*k,y:by-144*k,r:25*k,l:'HOOK'},{k:ex?'KeyF':'KeyG',x:bx+34*k,y:by-144*k,r:25*k,l:ex?'USE':'ITEM'}];
   const U=[{k:'Escape',l:'⏸'},{act:chatStart,l:'💬'},{k:'KeyT',l:'😀'}];
   U.forEach((u,i)=>{u.r=18*k;if(wL){u.x=ax+(i-1)*40*k;u.y=30*k;}else{u.x=r.left+r.width-28*k;u.y=r.top+r.height*.36+i*44*k;}B.push(u);});
-  if(ex||(typeof inParty==='function'&&inParty()))B.push({k:'KeyV',x:bx,y:by-198*k,r:23*k,l:'TEAM'});return B;}
+  if(ex||(typeof inParty==='function'&&inParty()))B.push({k:'KeyV',x:bx,y:by-198*k,r:23*k,l:'TEAM'});
+  if(state==='pause'){const pb=B.find(b=>b.k==='Escape'),o=[Object.assign({},pb,{l:'▶'})];if(/^(battle|rush|free|race|daily|expedition)$/.test(mode))o.push({k:'KeyM',x:pb.x,y:pb.y+(wL?0:46*k),r:pb.r,l:'EXIT'});if(wL&&o[1])o[1].x=pb.x+80*k;return o;}
+  return B;}
 function tButs(){const r=tRect(),f=W/r.width;return tButsS().map(b=>Object.assign({},b,{x:(b.x-r.left)*f,y:(b.y-r.top)*f,r:b.r*f,sx:b.x,sy:b.y,sr:b.r}));}
 const TT={};let TFS=0;
 function kEv(t,code){try{window.dispatchEvent(new KeyboardEvent(t,{code,key:code==='Space'?' ':code==='Escape'?'Escape':code==='Enter'?'Enter':code.startsWith('Arrow')?code:code.startsWith('Shift')?'Shift':code.replace('Key','').toLowerCase(),bubbles:true}));}catch(e){}}
 function tPos(t){const r=tRect();return{x:(t.clientX-r.left)/r.width*W,y:(t.clientY-r.top)/r.height*H};}
-function tLive(){return state==='play'&&touchOn()&&!OV.el;}
+function tLive(){return (state==='play'||state==='pause')&&touchOn()&&!OV.el&&!modal;}
 function tHitS(x,y){if(!tLive())return null;let best=null,bd=1e9;for(const b of tButsS()){const d=Math.hypot(x-b.x,y-b.y);if(d<b.r+12&&d<bd){bd=d;best=b;}}return best;}
 function tHit(x,y){if(!tLive())return null;const r=tRect();return tHitS(r.left+x*r.width/W,r.top+y*r.height/H);}
 try{cv.style.touchAction='none';
@@ -2274,7 +2278,7 @@ try{addEventListener('gamepadconnected',e=>{if(!GP.seen)popups.push({s:'🎮 Con
   addEventListener('gamepaddisconnected',()=>{gpRelease();GP.cur=false;popups.push({s:'Controller disconnected',t:2});});}catch(e){}
 const PSETBTN={x:W/2-80,y:H/2+96,w:160,h:40};
 function drawTouch(){if(state==='pause'&&!OV.el){const h=inR(PSETBTN);ctx.fillStyle=h?'#4a3fa0':'rgba(40,30,90,.9)';rr(PSETBTN.x,PSETBTN.y,PSETBTN.w,PSETBTN.h,20);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 15px Trebuchet MS';ctx.textAlign='center';ctx.fillText('⚙ SETTINGS (O)',W/2,PSETBTN.y+26);
-    if(touchOn()){ctx.font='14px Trebuchet MS';ctx.fillText('tap ⏸ again to resume',W/2,PSETBTN.y+64);}}
+    if(touchOn()){ctx.font='14px Trebuchet MS';ctx.fillText('tap ▶ to resume',W/2,PSETBTN.y+64);}}
   ovDraw();
   if(ISTOUCH&&innerHeight>innerWidth&&state!=='play'){ctx.fillStyle='rgba(0,0,0,.75)';rr(W/2-230,H/2-40,460,80,16);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 22px Trebuchet MS';ctx.textAlign='center';ctx.fillText('↻ Turn your phone sideways',W/2,H/2-4);ctx.font='14px Trebuchet MS';ctx.fillText('the game fills the whole screen in landscape',W/2,H/2+22);}
   if(SET.fps){ctx.fillStyle='#7dffa0';ctx.font='bold 12px Trebuchet MS';ctx.textAlign='left';ctx.fillText(Math.round(FPSA)+' FPS',W-70,H-8);}}
@@ -3344,7 +3348,7 @@ function draw(){try{ctx.setTransform(BS,0,0,BS,0,0);}catch(e){}if(!SET.shake)sha
   if((state==='play'||state==='pause')&&LAVA)drawLavaHud();
   if(state==='play'&&RACE9)drawRace9Hud();if(DLG&&state==='play')drawDlg();
   if(state==='pause'){ctx.fillStyle='rgba(5,5,20,.6)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 54px Trebuchet MS';ctx.fillText('PAUSED',W/2,H/2);
-    ctx.font='18px Trebuchet MS';ctx.fillText('Press P to resume',W/2,H/2+36);if(mode==='battle')ctx.fillText('Press M to leave the arena',W/2,H/2+62);if(mode==='free')ctx.fillText('Press M to leave freeplay',W/2,H/2+62);if(mode==='race')ctx.fillText('Press M to leave the race',W/2,H/2+62);if(mode==='expedition')ctx.fillText('Press M to leave The Climb (camps you reached today are saved)',W/2,H/2+62);if(mode==='rush')ctx.fillText('Press M to leave the Boss Rush (you keep your coins)',W/2,H/2+62);}
+    ctx.font='18px Trebuchet MS';const TO=touchOn();ctx.fillText(TO?'Tap ▶ to resume':'Press P to resume',W/2,H/2+36);if(TO&&/^(battle|rush|free|race|daily|expedition)$/.test(mode))ctx.fillText('Tap EXIT to leave',W/2,H/2+62);else if(mode==='battle')ctx.fillText('Press M to leave the arena',W/2,H/2+62);if(mode==='free')ctx.fillText('Press M to leave freeplay',W/2,H/2+62);if(mode==='race')ctx.fillText('Press M to leave the race',W/2,H/2+62);if(mode==='expedition')ctx.fillText('Press M to leave The Climb (camps you reached today are saved)',W/2,H/2+62);if(mode==='rush')ctx.fillText('Press M to leave the Boss Rush (you keep your coins)',W/2,H/2+62);}
   if(state==='menu'||state==='dead'){drawMenu();drawLobbyChat();}
   if(state==='shop')drawShop();
   if(state==='battles')drawBattles();
@@ -3685,7 +3689,7 @@ requestAnimationFrame(loop);
     const r=cv.getBoundingClientRect(),room=innerHeight-r.bottom;
     show=!t&&(state==='menu'||state==='dead')&&!(PROF&&PROF.open)&&!modal&&room>=44;
     if(show){a.style.left=(r.left+r.width/2)+'px';a.style.top=Math.round(r.bottom+Math.min(18,(room-40)/2))+'px';}}catch(e){}
-    a.style.display=show?'block':'none';},250);
+    a.style.display='none';},250);
 }catch(e){}})();
 </script>
 </body>
