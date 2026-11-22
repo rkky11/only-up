@@ -2220,10 +2220,10 @@ function tButsS(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),L=r
     {k:'ShiftLeft',x:bx+34*k,y:by-84*k,r:27*k,l:'DASH'},{k:'KeyQ',x:bx-34*k,y:by-84*k,r:27*k,l:ex?'SWAP':'POUND'},
     {k:'Space',x:bx-34*k,y:by-144*k,r:25*k,l:'HOOK'},{k:ex?'KeyF':'KeyG',x:bx+34*k,y:by-144*k,r:25*k,l:ex?'USE':'ITEM'}];
   const U=[{k:'Escape',l:'⏸'},{act:chatStart,l:'💬'},{k:'KeyT',l:'😀'}];
-  U.forEach((u,i)=>{u.r=25*k;if(wL){u.x=Math.max(ax,u.r+26);u.y=58*k+i*56*k;}else{u.x=r.left+r.width-32*k-i*58*k;u.y=r.top+36*k;}B.push(u);});
+  U.forEach((u,i)=>{u.r=(i?24:34)*k;u.x=i?vw-124*k-(i-1)*62*k:vw-44*k;u.y=i?38*k:44*k;if(!i)u.big=1;B.push(u);});
   if(ex||(typeof inParty==='function'&&inParty()))B.push({k:'KeyV',x:bx-34*k,y:by-198*k,r:23*k,l:'TEAM'});
   if(!ex&&p&&p.owned&&p.owned.length>1)B.push({k:'KeyE',x:bx+34*k,y:by-200*k,r:25*k,l:'WEAPON',t0:0});
-  if(state==='pause'){const pb=B.find(b=>b.k==='Escape'),o=[Object.assign({},pb,{l:'▶'})];if(/^(battle|rush|free|race|daily|expedition)$/.test(mode))o.push({k:'KeyM',x:pb.x,y:pb.y+(wL?0:46*k),r:pb.r,l:'EXIT'});if(wL&&o[1])o[1].x=pb.x+80*k;return o;}
+  if(state==='pause'){const pb=B.find(b=>b.k==='Escape'),o=[Object.assign({},pb,{l:'▶'})];if(/^(battle|rush|free|race|daily|expedition)$/.test(mode))o.push({k:'KeyM',x:pb.x,y:pb.y+86*k,r:28*k,l:'EXIT'});return o;}
   return B;}
 function tAtkHome(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),R2=vw-(r.left+r.width),k=Math.max(.75,Math.min(1.35,Math.min(vw,vh)/400))*(SET.tsize||1),wR=R2>=100*k;return{x:wR?vw-R2/2:r.left+r.width-82*k,y:vh-66*k,R:50*k,k};}
 function tJsHome(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),L=r.left,k=Math.max(.75,Math.min(1.35,Math.min(vw,vh)/400))*(SET.tsize||1),wL=L>=100*k;return{x:wL?L/2:r.left+95*k,y:vh-95*k,R:58*k,k};}
@@ -2242,7 +2242,7 @@ function jsEnd(){if(!JS)return;for(const c of JS.held)kEv('keyup',c);JS=null;}
 function kEv(t,code){try{window.dispatchEvent(new KeyboardEvent(t,{code,key:code==='Space'?' ':code==='Escape'?'Escape':code==='Enter'?'Enter':code.startsWith('Arrow')?code:code.startsWith('Shift')?'Shift':code.replace('Key','').toLowerCase(),bubbles:true}));}catch(e){}}
 function tPos(t){const r=tRect();return{x:(t.clientX-r.left)/r.width*W,y:(t.clientY-r.top)/r.height*H};}
 function tLive(){return (state==='play'||state==='pause')&&touchOn()&&!OV.el&&!modal;}
-function tHitS(x,y){if(!tLive())return null;let best=null,bd=1e9;for(const b of tButsS()){const d=Math.hypot(x-b.x,y-b.y);if(d<b.r+12&&d<bd){bd=d;best=b;}}return best;}
+function tHitS(x,y){if(!tLive())return null;let best=null,bd=1e9;for(const b of tButsS()){const d=Math.hypot(x-b.x,y-b.y);if(d<b.r+(b.big?26:12)&&d<bd){bd=d;best=b;}}return best;}
 function tHit(x,y){if(!tLive())return null;const r=tRect();return tHitS(r.left+x*r.width/W,r.top+y*r.height/H);}
 try{cv.style.touchAction='none';
 const tMine=e=>{const g=e.target;return g===cv||g===document.body||g===document.documentElement||g===TCV;};
