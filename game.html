@@ -2235,7 +2235,9 @@ let JA=null,JAF=0;
 function jaDir(){if(!JA)return null;const dx=JA.x-JA.ox,dy=JA.y-JA.oy,d=Math.hypot(dx,dy);return d<JA.R*.25?null:[dx/d,dy/d];}
 function jaAim(dv){if(!p||!dv)return;mouse.x=p.x+PW/2-camX+dv[0]*140;mouse.y=p.y-20-camY+dv[1]*140;aimMouse=true;}
 function jaTick(){if(JA){const dv=jaDir();if(dv)jaAim(dv);}if(JAF){jaAim(JAF.d);if(performance.now()>JAF.t){mouseDown=false;JAF=0;}}}
-function jaEnd(){if(!JA)return;const dv=jaDir();if(dv){jaAim(dv);mouseDown=true;JAF={d:dv,t:performance.now()+90};}else{aimMouse=false;kEv('keydown','KeyJ');setTimeout(()=>kEv('keyup','KeyJ'),90);}JA=null;}
+function jaEnd(){if(!JA)return;const dv=jaDir();if(dv){jaAim(dv);mouseDown=true;JAF={d:dv,t:performance.now()+90};}else{const tg=jaNearest();if(tg){jaAim(tg);mouseDown=true;JAF={d:tg,t:performance.now()+90};}else{aimMouse=false;kEv('keydown','KeyJ');setTimeout(()=>kEv('keyup','KeyJ'),90);}}JA=null;}
+function jaNearest(){if(!p)return null;const cx=p.x+PW/2,cy=p.y-20;let bd=520,best=null;const tr=(x,y)=>{const d=Math.hypot(x-cx,y-cy);if(d<bd&&d>1){bd=d;best=[(x-cx)/d,(y-cy)/d];}};
+  try{for(const e of enemies)if(!e.dead)tr(e.x,e.y);}catch(er){}try{if(canPvp())for(const [id,o] of foes())tr(o.x+PW/2,o.y-18);}catch(er){}return best;}
 function jsEnd(){if(!JS)return;for(const c of JS.held)kEv('keyup',c);JS=null;}
 function kEv(t,code){try{window.dispatchEvent(new KeyboardEvent(t,{code,key:code==='Space'?' ':code==='Escape'?'Escape':code==='Enter'?'Enter':code.startsWith('Arrow')?code:code.startsWith('Shift')?'Shift':code.replace('Key','').toLowerCase(),bubbles:true}));}catch(e){}}
 function tPos(t){const r=tRect();return{x:(t.clientX-r.left)/r.width*W,y:(t.clientY-r.top)/r.height*H};}
