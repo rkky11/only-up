@@ -2228,7 +2228,7 @@ function tAtkHome(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),R
 function tJsHome(){const vw=innerWidth||W,vh=(innerHeight||H)-SAFEB,r=tRect(),L=r.left,k=Math.max(.75,Math.min(1.35,Math.min(vw,vh)/400))*(SET.tsize||1),wL=L>=100*k;return{x:wL?L/2:r.left+95*k,y:vh-95*k,R:58*k,k};}
 function tButs(){const r=tRect(),f=W/r.width;return tButsS().map(b=>Object.assign({},b,{x:(b.x-r.left)*f,y:(b.y-r.top)*f,r:b.r*f,sx:b.x,sy:b.y,sr:b.r}));}
 const TT={};let TFS=0,JS=null;
-function jsKeys(j){const dx=j.x-j.ox,dy=j.y-j.oy,dz=j.R*.28,want=new Set();if(dx<-dz)want.add('ArrowLeft');else if(dx>dz)want.add('ArrowRight');if(dy>j.R*.55&&Math.abs(dy)>Math.abs(dx)*.8)want.add('ArrowDown');else if(dy<-j.R*.45)want.add('ArrowUp');
+function jsKeys(j){const dx=j.x-j.ox,dy=j.y-j.oy,dz=j.R*.28,want=new Set();if(dx<-dz)want.add('ArrowLeft');else if(dx>dz)want.add('ArrowRight');if(dy>j.R*.55&&Math.abs(dy)>Math.abs(dx)*.8)want.add('ArrowDown');
   for(const c of j.held)if(!want.has(c)){kEv('keyup',c);j.held.delete(c);}for(const c of want)if(!j.held.has(c)){kEv('keydown',c);j.held.add(c);}}
 let JA=null,JAF=0;
 function jaDir(){if(!JA)return null;const dx=JA.x-JA.ox,dy=JA.y-JA.oy,d=Math.hypot(dx,dy);return d<JA.R*.25?null:[dx/d,dy/d];}
@@ -2248,6 +2248,7 @@ document.addEventListener('touchstart',e=>{if(!tMine(e))return;e.preventDefault(
     if(b){if(b.act){b.act();continue;}if(b.k==='KeyT'){mouse.x=q.x;mouse.y=q.y;}kEv('keydown',b.k);TT[t.identifier]={b};}
     else if(state==='play'&&tLive()&&!JA&&(()=>{const a=tAtkHome();return Math.hypot(t.clientX-a.x,t.clientY-a.y)<a.R+18;})()){const a=tAtkHome();JA={id:t.identifier,ox:a.x,oy:a.y,x:t.clientX,y:t.clientY,R:a.R};TT[t.identifier]={ja:1};}
     else if(state==='play'&&tLive()&&!JS&&t.clientX<(innerWidth||W)*.42){const h=tJsHome();JS={id:t.identifier,ox:t.clientX,oy:t.clientY,x:t.clientX,y:t.clientY,R:h.R,held:new Set()};TT[t.identifier]={js:1};}
+    else if(state==='play'&&tLive()&&!(typeof DLG!=='undefined'&&DLG)&&!(mode==='race'&&RACE&&RACE.st==='lobby')&&!(q.x>WBOX.x&&q.x<WBOX.x+WBOX.w&&q.y>WBOX.y&&q.y<WBOX.y+WBOX.h)&&!wmenu){kEv('keydown','ArrowUp');TT[t.identifier]={b:{k:'ArrowUp'}};}
     else if(e.target===cv){mouse.x=q.x;mouse.y=q.y;aimMouse=true;TT[t.identifier]={m:1};cv.dispatchEvent(new MouseEvent('mousedown',{clientX:t.clientX,clientY:t.clientY,button:0,bubbles:true}));}}},{passive:false});
 document.addEventListener('touchmove',e=>{if(!tMine(e))return;e.preventDefault();for(const t of e.changedTouches){const o=TT[t.identifier];if(!o)continue;
   if(o.ja&&JA){JA.x=t.clientX;JA.y=t.clientY;continue;}
@@ -2403,7 +2404,6 @@ function update(dt){if(DLG&&state==='play'){dlgTick(dt);return;}lavaTick(dt);tea
   // jumps
   if(p.ground)coyote=COYOTE;else coyote-=dt;
   if(p.wallDir&&!p.ground)wallCoyote=0.16;else wallCoyote-=dt;
-  if(typeof JS!=='undefined'&&JS&&JS.held.has('ArrowUp')&&p.wallDir&&!p.ground){if(!p.wjAuto){jumpBuffer=.13;p.wjAuto=1;}}else if(!p.wallDir)p.wjAuto=0;
   jumpBuffer-=dt;
   if(mode==='expedition')expPhys(dt,L,R,D,hold);
   let orb=null;
