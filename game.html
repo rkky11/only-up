@@ -2250,6 +2250,7 @@ function jaEnd(){if(!JA)return;const dv=jaDir();if(dv){jaAim(dv);mouseDown=true;
 let JTP=null;function jaNearest(v){if(!p)return null;if(!v)JTP=null;const cx=p.x+PW/2,cy=p.y-20;let bs=1e9,best=null;const tr=(x,y)=>{const d=Math.hypot(x-cx,y-cy);if(d<1||d>(v?900:800))return;const u=[(x-cx)/d,(y-cy)/d];let sc=d;if(v){const dot=u[0]*v[0]+u[1]*v[1];if(dot<.82)return;sc=d*(2-dot);}if(sc<bs){bs=sc;best=u;if(!v)JTP=[x,y];}};
   try{for(const e of enemies)if(!e.dead)tr(e.x,e.y);}catch(er){}try{if(bossR&&bossR.e&&!bossR.e.dead)tr(bossR.e.x,bossR.e.y);}catch(er){}try{if(canPvp())for(const [id,o] of foes())tr(o.x+PW/2,o.y-18);}catch(er){}return best;}
 function jaReticle(){if(state!=='play'||!touchOn()||!p)return;jaNearest();if(!JTP)return;const x=JTP[0]-camX,y=JTP[1]-camY,t=performance.now()/1000,r=22+Math.sin(t*6)*3;ctx.save();ctx.strokeStyle='rgba(255,80,80,.85)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();for(let i=0;i<4;i++){const a=i*Math.PI/2+t;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*(r-6),y+Math.sin(a)*(r-6));ctx.lineTo(x+Math.cos(a)*(r+7),y+Math.sin(a)*(r+7));ctx.stroke();}ctx.restore();}
+function jsDir(){if(!JS)return null;const dx=JS.x-JS.ox,dy=JS.y-JS.oy,d=Math.hypot(dx,dy);if(d<JS.R*.28)return null;return[dx/d,dy/d];}
 function jsEnd(){if(!JS)return;for(const c of JS.held)kEv('keyup',c);JS=null;}
 function kEv(t,code){try{window.dispatchEvent(new KeyboardEvent(t,{code,key:code==='Space'?' ':code==='Escape'?'Escape':code==='Enter'?'Enter':code.startsWith('Arrow')?code:code.startsWith('Shift')?'Shift':code.replace('Key','').toLowerCase(),bubbles:true}));}catch(e){}}
 function tPos(t){const r=tRect();return{x:(t.clientX-r.left)/r.width*W,y:(t.clientY-r.top)/r.height*H};}
@@ -2433,7 +2434,7 @@ function update(dt){if(DLG&&state==='play'){dlgTick(dt);return;}lavaTick(dt);tea
     if(coyote>0&&(!p.slide||canStand())){
       p.vy=-JUMP*JM();if(mode==='expedition')expLegUp();sfx('jump');pSquash(-.3);coyote=0;jumpBuffer=0;p.ground=null;p.slide=false;p.bouncing=false;puff(p.x+PW/2,p.y,6,'#fff',80);p.sq=.24;p.sqv=0;if(Math.abs(p.vx)>MAXV+60)startFlip(Math.sign(p.vx));
     }else if(orb&&!p.ground&&orb.kind==='d'){
-      let dx=(R?1:0)-(L?1:0),dy=(D?1:0)-(hold?1:0);if(!dx&&!dy){dx=p.face;dy=-1;}const m=Math.hypot(dx,dy);
+      let dx=(R?1:0)-(L?1:0),dy=(D?1:0)-(hold?1:0);{const v=jsDir();if(v){dx=v[0];dy=v[1];}}if(!dx&&!dy){dx=p.face;dy=-1;}const m=Math.hypot(dx,dy);
       p.vx=dx/m*760;p.vy=dy/m*760;p.dashT=0.16;jumpBuffer=0;orb.cd=0.35;orb.pop=0.3;p.dive=false;p.dived=false;puff(orb.x,orb.y,18,'#5aff8c',200);
     }else if(orb&&!p.ground){
       const pk=orb.kind==='p';p.vy=-JUMP*(pk?1.35:1.03);sfx(pk?'boing':'orb');jumpBuffer=0;orb.cd=0.35;orb.pop=0.3;
@@ -2449,7 +2450,7 @@ function update(dt){if(DLG&&state==='play'){dlgTick(dt);return;}lavaTick(dt);tea
   }
   // air dash / ground pound
   if(dashEdge&&p.ab.ad&&!p.ground&&p.canDash){
-    let dx=(R?1:0)-(L?1:0),dy=(D?1:0)-(hold?1:0);if(!dx&&!dy)dx=p.face;const m=Math.hypot(dx,dy);
+    let dx=(R?1:0)-(L?1:0),dy=(D?1:0)-(hold?1:0);{const v=jsDir();if(v){dx=v[0];dy=v[1];}}if(!dx&&!dy)dx=p.face;const m=Math.hypot(dx,dy);
     const upD=!!SAVE.up.ad;p.vx=dx/m*820;p.vy=dy/m*820;p.dashT=upD?0.24:0.15;if(upD)p.phaseT=0.3;p.canDash=false;p.dive=false;shake=.08;sfx('dash');pSquash(-.2);puff(p.x+PW/2,p.y-18,12,'#fff',150);
   }
   if(poundEdge&&p.ab.gp&&!p.ground&&!p.pound){p.pound=true;p.vx=0;p.vy=1300;p.dive=false;p.dashT=0;}
