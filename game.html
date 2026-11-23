@@ -72,7 +72,6 @@ addEventListener('keydown',e=>{
   else if(['Digit1','Digit2','Digit3'].includes(e.code)&&state==='play'&&!e.repeat&&p&&p.ground){p.emote={k:+e.code.slice(5),t:0};}
   else if(e.code==='KeyT'&&(state==='play'||((state==='menu'||state==='dead')&&!PROF.open&&!nameEdit&&!MSEL))&&!e.repeat&&!chatOpen){emWheel=true;emHov=-1;mouseDown=false;}
   else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&mode==='rush'&&hallNear()){hallUse();}
-  else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&p&&p.owned.length<=1&&!(typeof XM!=='undefined'&&XM&&XM.k==='snow')){popups=popups.filter(q=>q.wq!==1);popups.push({s:'Only 1 weapon so far',sub:'grab weapon crates to fill your weapon wheel',t:1.8,wq:1});}
   else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&p&&p.owned.length>1){wheel=true;wheelHov=-1;wmenu=false;mouseDown=false;}
   else if(state==='shop'&&(e.code==='Escape'||e.code==='Backspace'))state=shopFrom;
   else if(e.code==='Enter'&&state!=='play'&&state!=='shop'&&state!=='pause'){if((state==='menu'||state==='dead')&&!PROF.open)lobbyPlay();else if(state==='battles')start('battle');}
@@ -83,7 +82,7 @@ cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=(
 let mouseDown=false,aimMouse=false,hookEdge=false,dashEdge=false,poundEdge=false;
 let wmenu=false;
 const wRows=()=>Math.floor((H-(WBOX.y+WBOX.h+4)-16)/WROW);
-const WL=()=>{const f=p.owned.filter(w=>SAVE.fav.includes(w));return f.length>1?f:p.owned;};
+const WL=()=>{const f=p.owned.filter(w=>SAVE.fav.includes(w));return f.length?f:p.owned;};
 function pickW(wi){p.wpn=wi;p.cd=0;p.newW=p.newW.filter(w=>w!==wi);}
 function wheelGeom(){const n=WL().length,R=Math.min(215,70+n*6);return{n,R,cx:Math.max(R+40,Math.min(W-R-40,p.x+PW/2-camX)),cy:Math.max(R+45,Math.min(H-R-45,p.y-18-camY))};}
 const WBOX={x:12,y:118,w:190,h:26},WROW=22;
@@ -361,7 +360,7 @@ const WP=[
 {n:'Plasma Cannon',tip:'slow orb, huge blast, plasma jumps',k:'g',cd:1.1,d:4,v:380,ex:100,r:9,col:'#4dffd2'},
 {n:'Grapple Gun',tip:'shots anchor in walls as swing rings (SPACE)',k:'g',cd:.35,d:1,v:1250,stick:1,col:'#3fdc6a'},
 {n:'Vault Pole',tip:'run + attack: plant the pole and vault up high',k:'m',cd:.5,d:1,r:72,arc:.8,col:'#6fb6ff',pole:1},
-{n:'Chain Whip',tip:'long reach that yanks enemies toward you',k:'m',cd:.45,d:2,r:112,arc:.55,kb:-480,col:'#b0b4c0'},
+{n:'Chain Whip',tip:'extra-long reach that yanks enemies toward you',k:'m',cd:.45,d:2,r:230,arc:.55,kb:-480,col:'#b0b4c0'},
 {n:'Frost Bow',tip:'slows; 3 hits freeze an enemy solid',k:'g',cd:.5,d:1,v:900,g:600,frost:1,col:'#7fd8ff'},
 {n:'Black Hole Orb',tip:'slow orb that sucks enemies in, then pops',k:'g',cd:1.4,d:3,v:230,r:10,life:1.5,ex:95,hole:1,col:'#9b6bff'},
 {n:'Thunder Hammer',tip:'ground slams send shockwaves both ways',k:'m',cd:.75,d:3,r:52,arc:1.8,kb:600,col:'#7f9bff'},
@@ -2657,7 +2656,7 @@ function attack(){
     if(w.n==='Twin Daggers'){p.tdn=(p.tdn||0)+1;if(p.tdn%4===0){swing.w=Object.assign({},w,{d:3,r:46});p.vx=(Math.abs(ax)>.2?Math.sign(ax):p.face)*700;if(!p.ground)p.vy=Math.min(p.vy,-140);puff(cx,cy,10,'#c9b8ff',140);}}
     if(w.n==='Thunder Hammer'&&p.ground){shake=Math.max(shake,.3);sfx('explode');puff(cx,p.y,20,'#9fb0ff',240);for(const sd of[-1,1])projs.push({x:cx,y:p.y-12,vx:sd*560,vy:0,g:0,d:2,life:.6,own:'p',r:12,col:'#7f9bff',pierce:1,ghost:1,wn:'Thunder Hammer',hit:new Set(),t:0});}
     if(w.n==='Thunder Hammer'&&!p.ground&&ay>.5){p.vy=1100;}
-    if(w.n==='Pogo Staff'&&ay>.5&&!p.ground&&([...plats.filter(plOn)].some(q=>cx>q.x-14&&cx<q.x+q.w+14&&q.y-p.y>=-4&&q.y-p.y<110)||solids.some(q=>cx>q.x-14&&cx<q.x+q.w+14&&q.y-p.y>=-4&&q.y-p.y<110)||enemies.some(e=>!e.dead&&Math.abs(e.x-cx)<40&&e.y-p.y>-10&&e.y-p.y<110))){p.vy=-1020;p.dived=false;p.airJumps=maxAir();p.canDash=true;sfx('boing');startFlip(p.face,1.2);puff(cx,p.y+20,10,'#cfd3dc',140);}
+    if(w.n==='Pogo Staff'&&ay>.5&&!p.ground&&([...plats.filter(plOn)].some(q=>cx>q.x-14&&cx<q.x+q.w+14&&q.y-p.y>=-4&&q.y-p.y<170)||solids.some(q=>cx>q.x-14&&cx<q.x+q.w+14&&q.y-p.y>=-4&&q.y-p.y<170)||enemies.some(e=>!e.dead&&Math.abs(e.x-cx)<50&&e.y-p.y>-10&&e.y-p.y<170))){p.vy=-1600;p.dived=false;p.airJumps=maxAir();p.canDash=true;sfx('boing');startFlip(p.face,1.2);puff(cx,p.y+20,10,'#cfd3dc',140);}
     if(w.n==='Sword')for(const q of projs)if(q.own==='e'&&Math.hypot(q.x-cx,q.y-cy)<70){q.dead=1;puff(q.x,q.y,6,'#cfe8ff',120);}
     return;}
   if(w.k==='g'){
@@ -4151,7 +4150,7 @@ function hallShadowRace(rx){hallClear();RACE9=null;HALL.st='race';HALL.fid='R';H
   popups.push({s:'THE SHADOW RACE',sub:'every ability unlocked · walk onto the floor to meet him',t:3.5,big:1});}
 function hallRushStart(){hallClear();HALL.st='rush';HALL.mw=0;p.x=110;p.y=START_Y;p.vx=p.vy=0;p.hp=maxHP();p.inv=2;camX=0;camY=0;buildRush();for(const q of plats)q.deco='marble';for(const s of solids)s.hall=1;}
 function hallReturn(){RACE9=null;nextY=-1e9;DLG=null;const id=HALL.fid,x=HALL.st==='rush'?HALL.gate.x+60:HALL.retX;buildHall(x||200);p.hp=maxHP();p.inv=1.5;}
-function hallTick(dt){if(mode!=='rush'||!HALL)return;HALL.t+=dt;if(!HALL.arm&&p){HALL.arm=1;p.owned=WP.map((w,i)=>i).filter(i=>WP[i].n!=='Snowball');}
+function hallTick(dt){if(mode!=='rush'||!HALL)return;HALL.t+=dt;
   for(const e of enemies)if(e.type==='krampus'&&!e.dead)krTick(e,dt);
   for(const e of enemies)if(e.type==='krampus'&&e.dead&&!e.kc){e.kc=1;enemies.forEach(q=>{if(q.elf)q.dead=true;});projs=projs.filter(q=>q.own!=='e');}
   if((HALL.st==='fight'||HALL.st==='race')&&HALL.e&&HALL.e.dead&&!HALL.won){HALL.won=1;HALL.wt=0;bossR=null;const id=HALL.fid,k=String(id),first=!SAVE.hallW[k],idx=HALL_LIST.indexOf(id),c=(first?3:1)*(40+idx*25);
