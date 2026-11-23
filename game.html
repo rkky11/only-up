@@ -72,6 +72,7 @@ addEventListener('keydown',e=>{
   else if(['Digit1','Digit2','Digit3'].includes(e.code)&&state==='play'&&!e.repeat&&p&&p.ground){p.emote={k:+e.code.slice(5),t:0};}
   else if(e.code==='KeyT'&&(state==='play'||((state==='menu'||state==='dead')&&!PROF.open&&!nameEdit&&!MSEL))&&!e.repeat&&!chatOpen){emWheel=true;emHov=-1;mouseDown=false;}
   else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&mode==='rush'&&hallNear()){hallUse();}
+  else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&p&&p.owned.length<=1&&!(typeof XM!=='undefined'&&XM&&XM.k==='snow')){popups=popups.filter(q=>q.wq!==1);popups.push({s:'Only 1 weapon so far',sub:'grab weapon crates to fill your weapon wheel',t:1.8,wq:1});}
   else if(e.code==='KeyE'&&state==='play'&&!e.repeat&&p&&p.owned.length>1){wheel=true;wheelHov=-1;wmenu=false;mouseDown=false;}
   else if(state==='shop'&&(e.code==='Escape'||e.code==='Backspace'))state=shopFrom;
   else if(e.code==='Enter'&&state!=='play'&&state!=='shop'&&state!=='pause'){if((state==='menu'||state==='dead')&&!PROF.open)lobbyPlay();else if(state==='battles')start('battle');}
@@ -82,7 +83,7 @@ cv.addEventListener('mousemove',e=>{const r=cv.getBoundingClientRect();mouse.x=(
 let mouseDown=false,aimMouse=false,hookEdge=false,dashEdge=false,poundEdge=false;
 let wmenu=false;
 const wRows=()=>Math.floor((H-(WBOX.y+WBOX.h+4)-16)/WROW);
-const WL=()=>{const f=p.owned.filter(w=>SAVE.fav.includes(w));return f.length?f:p.owned;};
+const WL=()=>{const f=p.owned.filter(w=>SAVE.fav.includes(w));return f.length>1?f:p.owned;};
 function pickW(wi){p.wpn=wi;p.cd=0;p.newW=p.newW.filter(w=>w!==wi);}
 function wheelGeom(){const n=WL().length,R=Math.min(215,70+n*6);return{n,R,cx:Math.max(R+40,Math.min(W-R-40,p.x+PW/2-camX)),cy:Math.max(R+45,Math.min(H-R-45,p.y-18-camY))};}
 const WBOX={x:12,y:118,w:190,h:26},WROW=22;
@@ -389,7 +390,7 @@ const maxAir=()=>(p.ab.dj?1:0)+(p.ab.tj?1:0);
 
 
 function addRoom(){
-  if(mode==='climb'&&(floorN+1)%100===0){addBossRoom();return;}
+  if((mode==='climb'||(mode==='rush'&&HALL&&HALL.st==='race'))&&(floorN+1)%100===0){addBossRoom();return;}
   if(newPend){newPend=false;addNewRoom();return;}
   let idx;
   if(roomCount<TUTORIAL.length)idx=TUTORIAL[roomCount];
@@ -476,7 +477,7 @@ function startBoss(b,go){if(!go&&b.lvl===8){shadowRaceIntro(b);return;}if(!go&&b
   sfx('boss');popups.push({s:'BOSS: '+B.n.toUpperCase(),sub:'There is no way out until it falls',t:3.5,big:1});shake=.5;flash=.25;}
 function addShard(k){const a=ABIL.find(q=>q[1]===k);SAVE.sh[k]=(SAVE.sh[k]||0)+1;
   if(SAVE.sh[k]>=10){SAVE.sh[k]-=10;SAVE.up[k]=1;popups.push({s:'UPGRADED: '+a[2]+'+!',sub:UPDESC[k],t:6,big:1});return true;}return false;}
-function bossReward(b){if(b.lvl===9)shadowWin(b);sfx('victory');let c=100*(b.lvl+1)*(1+b.cyc);const shards=HC&&SAVE.pab.length>=ABIL.length;
+function bossReward(b){if(mode==='rush'&&HALL&&HALL.st==='race'){HALL.e=b.e;return;}if(b.lvl===9)shadowWin(b);sfx('victory');let c=100*(b.lvl+1)*(1+b.cyc);const shards=HC&&SAVE.pab.length>=ABIL.length;
   for(const a of ABIL){if(shards&&!SAVE.up[a[1]])addShard(a[1]);else if(SAVE.pab.includes(a[1]))c+=50;else SAVE.cry[a[1]]=(SAVE.cry[a[1]]||0)+1;}
   p.coins+=c;saveS();bossR=null;
   popups.push({s:'BOSS DEFEATED!',sub:(shards?'+1 shard for every ability':'+1 crystal for every ability')+'  ·  +'+c+' coins  ·  the way up is open',t:5,big:1});flash=.5;shake=.7;
@@ -2001,8 +2002,8 @@ function die(msg){if(state==='play'&&p)dieFx();
   state='dead';deathMsg=msg;sfx('die');ghostSave();shake=0.5;flash=0.35;
   puff(p.x+PW/2,p.y-18,34,'#222',260);puff(p.x+PW/2,p.y-18,14,'#fff',200);
   SAVE.coins+=p.coins||0;saveS();
-  if(maxH>best){best=maxH;LSs('onlyUpBest3',best);}
-  const f=currentFloor();if(f>bestFloor){bestFloor=f;LSs('onlyUpBestF3',f);}
+  if(maxH>best&&mode!=='rush'){best=maxH;LSs('onlyUpBest3',best);}
+  const f=mode==='rush'?0:currentFloor();if(f>bestFloor){bestFloor=f;LSs('onlyUpBestF3',f);}
 }
 function startFlip(dir,spd=1){if(p.flip||p.aim||p.ajHold)return;p.flip={t:0,dur:.5/spd,dir:dir||p.face};}
 function flipDone(clean){if(clean)sfx('trick');const tr=mode==='climb'||mode==='race';p.combo=(p.combo||0)+1;p.comboT=2.5;const n=Math.min(5,p.combo);
@@ -2574,9 +2575,9 @@ function update(dt){if(DLG&&state==='play'){dlgTick(dt);return;}lavaTick(dt);tea
   lateFxTick(dt);if(state!=='play')return;
   {const tx=p.x+PW/2-p.face*30,ty=p.y-40+Math.sin(T*3)*4;pet.x+=(tx-pet.x)*Math.min(1,6*dt);pet.y+=(ty-pet.y)*Math.min(1,6*dt);if(Math.hypot(tx-pet.x,ty-pet.y)>500){pet.x=tx;pet.y=ty;}}
   p.run+=dt*Math.abs(p.vx)/28;ghostRec(dt);
-  const h=Math.max(0,Math.floor((START_Y-p.y)/10));if(h>maxH){passXP((h-maxH)*.2);maxH=h;}
+  const h=Math.max(0,Math.floor((START_Y-p.y)/10));if(h>maxH&&mode!=='rush'){passXP((h-maxH)*.2);maxH=h;}
   if(mode==='battle'){const tx=Math.max(0,Math.min(AR.w-W,p.x+PW/2-W/2));camX+=(tx-camX)*Math.min(1,dt*8);}else if(XM&&XM.mw){const tx=Math.max(0,Math.min(XM.mw-W,p.x+PW/2-W/2));camX+=(tx-camX)*Math.min(1,dt*8);}else if(mode==='rush'&&HALL&&HALL.mw){const tx=Math.max(0,Math.min(HALL.mw-W,p.x+PW/2-W/2));camX+=(tx-camX)*Math.min(1,dt*8);}else camX=0;
-  const target=mode==='battle'||mode==='rush'?0:Math.min(0,p.y-H*0.55);camY+=(target-camY)*Math.min(1,dt*(target<camY?5:9));
+  const target=mode==='battle'||(mode==='rush'&&!(HALL&&HALL.st==='race'))?0:Math.min(0,p.y-H*0.55);camY+=(target-camY)*Math.min(1,dt*(target<camY?5:9));
   if(Math.abs(p.vx)>430||p.dive)trail.push({x:p.x,y:p.y,l:0.2,pose:poseOf()});
   for(const t of trail)t.l-=dt;trail=trail.filter(t=>t.l>0);
 
@@ -4116,9 +4117,9 @@ function xmPPHud(){const l=Math.max(0,Math.ceil(XM.len-XM.t));ctx.textAlign='cen
     ctx.rotate(an);ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(22,0);ctx.lineTo(14,-6);ctx.lineTo(14,6);ctx.closePath();ctx.fill();ctx.restore();}ctx.textBaseline='alphabetic';}
 // ================= HALL OF BOSSES =================
 let HALL=null;const KR={kf:null,mw:1400};
-const HALL_LIST=[0,1,2,3,4,5,6,7,9,'K'];
-const bossName=id=>id==='K'?'Krampus':BOSSES[id].n;
-const bossCol=id=>id==='K'?'#c0302a':BOSSES[id].col;
+const HALL_LIST=[0,1,2,3,4,5,6,7,'R',9,'K'];
+const bossName=id=>id==='K'?'Krampus':id==='R'?'Shadow Race':BOSSES[id].n;
+const bossCol=id=>id==='K'?'#c0302a':id==='R'?'#ff2a4a':BOSSES[id].col;
 function spawnKrampusAt(F,arena,mw,cyc){KR.kf=arena;KR.mw=mw;
   const e={type:'krampus',name:'Krampus',x:mw-200,y:-300,w:58,h:96,hp:Math.round(110*(1+.6*(cyc||0))),max:0,pl:null,dir:-1,t:0,cd:9,vy:0,kx:0,hit:0,slow:0,tp:9,sx:mw-200,sy:0,kr:{st:'drop',t:0,f:-1,air:1,vx:0,rage:0,arm:0}};e.max=e.hp;
   enemies.push(e);bossR={state:'fight',e};popups.push({s:'BOSS: KRAMPUS',sub:'the Christmas devil',t:3.5,big:1});sfx('boss');return e;}
@@ -4127,8 +4128,8 @@ function hallArena(){const F=START_Y,M={deco:'marble'};const arena=mk(0,F,800,'n
   solids.push({x:0,y:F-580,w:800,h:24,hall:1});return arena;}
 function hallClear(){plats=[];solids=[];hazards=[];orbs=[];enemies=[];projs=[];crates=[];hooks=[];drafts=[];portals=[];shrines=[];coins=[];texts=[];bossRooms=[];bossR=null;rush=null;}
 function buildHall(at){hallClear();const F=START_Y;SAVE.hallW=SAVE.hallW||{};
-  HALL={mw:4700,st:'hall',t:0,st2:[],gate:{x:4390},cache:HALL&&HALL.cache||{}};
-  plats.push(mk(0,F,4700,'normal',{deco:'marble'}));
+  HALL={arm:HALL&&HALL.arm,mw:5100,st:'hall',t:0,st2:[],gate:{x:4790},cache:HALL&&HALL.cache||{}};
+  plats.push(mk(0,F,5100,'normal',{deco:'marble'}));
   HALL_LIST.forEach((id,i)=>HALL.st2.push({id,x:520+i*370}));
   // balconies between the statues
   for(let i=0;i<HALL_LIST.length-1;i++){const x=520+i*370+185;plats.push(mk(x-50,F-170,100,'normal',{deco:'marble'}));}
@@ -4139,17 +4140,21 @@ function hallNear(){if(!HALL||HALL.st!=='hall'||!p)return null;const cx=p.x+PW/2
   for(const s of HALL.st2)if(Math.abs(cx-s.x)<70&&p.y>START_Y-60)return{k:'s',id:s.id,x:s.x};
   if(Math.abs(cx-(HALL.gate.x+130))<130&&p.y>START_Y-80)return{k:'g'};return null;}
 function hallUse(){const n=hallNear();if(!n)return;sfx('power');flash=.35;shake=.2;
-  if(n.k==='s')hallFight(n.id,n.x);else hallRushStart();}
+  if(n.k==='s'&&n.id==='R')hallShadowRace(n.x);else if(n.k==='s')hallFight(n.id,n.x);else hallRushStart();}
 function hallFight(id,rx){hallClear();HALL.st='fight';HALL.fid=id;HALL.retX=rx;HALL.mw=0;HALL.t=0;const arena=hallArena(),F=START_Y;
   p.x=110;p.y=F;p.vx=p.vy=0;p.hook=null;p.hp=maxHP();p.inv=2;camX=0;camY=0;
   if(id==='K')HALL.e=spawnKrampusAt(F,arena,800,0);
   else{const b={F,arena,lvl:id,cyc:0,state:'wait',e:null,floor:0};startBoss(b,true);HALL.e=b.e;}}
+function hallShadowRace(rx){hallClear();RACE9=null;HALL.st='race';HALL.fid='R';HALL.retX=rx;HALL.mw=0;HALL.t=0;
+  floorN=899;oFloor=60;roomCount=40;recent=[];newPend=false;lastRoom=-1;nextY=START_Y;nextSide='L';addBossRoom();const b=bossRooms[0];
+  for(const a of ABIL)p.ab[a[1]]=1;p.x=110;p.y=b.F;p.vx=p.vy=0;p.hook=null;p.hp=maxHP();p.inv=2;camX=0;camY=Math.min(0,p.y-H*.55);
+  popups.push({s:'THE SHADOW RACE',sub:'every ability unlocked · walk onto the floor to meet him',t:3.5,big:1});}
 function hallRushStart(){hallClear();HALL.st='rush';HALL.mw=0;p.x=110;p.y=START_Y;p.vx=p.vy=0;p.hp=maxHP();p.inv=2;camX=0;camY=0;buildRush();for(const q of plats)q.deco='marble';for(const s of solids)s.hall=1;}
-function hallReturn(){const id=HALL.fid,x=HALL.st==='rush'?HALL.gate.x+60:HALL.retX;buildHall(x||200);p.hp=maxHP();p.inv=1.5;}
-function hallTick(dt){if(mode!=='rush'||!HALL)return;HALL.t+=dt;
+function hallReturn(){RACE9=null;nextY=-1e9;DLG=null;const id=HALL.fid,x=HALL.st==='rush'?HALL.gate.x+60:HALL.retX;buildHall(x||200);p.hp=maxHP();p.inv=1.5;}
+function hallTick(dt){if(mode!=='rush'||!HALL)return;HALL.t+=dt;if(!HALL.arm&&p){HALL.arm=1;p.owned=WP.map((w,i)=>i).filter(i=>WP[i].n!=='Snowball');}
   for(const e of enemies)if(e.type==='krampus'&&!e.dead)krTick(e,dt);
   for(const e of enemies)if(e.type==='krampus'&&e.dead&&!e.kc){e.kc=1;enemies.forEach(q=>{if(q.elf)q.dead=true;});projs=projs.filter(q=>q.own!=='e');}
-  if(HALL.st==='fight'&&HALL.e&&HALL.e.dead&&!HALL.won){HALL.won=1;HALL.wt=0;bossR=null;const id=HALL.fid,k=String(id),first=!SAVE.hallW[k],idx=HALL_LIST.indexOf(id),c=(first?3:1)*(40+idx*25);
+  if((HALL.st==='fight'||HALL.st==='race')&&HALL.e&&HALL.e.dead&&!HALL.won){HALL.won=1;HALL.wt=0;bossR=null;const id=HALL.fid,k=String(id),first=!SAVE.hallW[k],idx=HALL_LIST.indexOf(id),c=(first?3:1)*(40+idx*25);
     SAVE.hallW[k]=(SAVE.hallW[k]||0)+1;SAVE.coins+=c;saveS();sfx('victory');flash=.4;
     popups.push({s:'🏆 '+bossName(id).toUpperCase()+' DEFEATED!',sub:'+'+c+' coins'+(first?' (first win x3)':'')+' · back to the hall...',t:3.5,big:1});}
   if(HALL.won){HALL.wt+=dt;if(HALL.wt>3.5){HALL.won=0;hallReturn();}}
@@ -4158,8 +4163,8 @@ function hallTick(dt){if(mode!=='rush'||!HALL)return;HALL.t+=dt;
 function hallStatue(id){if(HALL.cache[id])return HALL.cache[id];const S=380,c=document.createElement('canvas');c.width=c.height=S;const A=c.getContext('2d');
   let ok=true;const old=ctx;ctx=A;const oT=T;try{T=1.3;
     if(id==='K'){const e={type:'krampus',x:S/2,y:S/2,w:58,h:96,hp:100,max:100,hit:0,t:1,kr:{st:'idle',f:1,arm:0,t:0}};A.setTransform(1.6,0,0,1.6,S/2*(1-1.6),S/2*(1-1.6));drawKrampus(e);}
-    else{const B=BOSSES[id],s=Math.min(2.4,120/Math.max(B.w,B.h));const e={type:'boss',boss:id+1,name:B.n,col:B.col,x:S/2,y:S/2,sx:S/2,sy:S/2,w:B.w,h:B.h,hp:B.hp,max:B.hp,dir:1,t:1,cd:9,vy:0,kx:0,hit:0,slow:0,tp:3,F:S/2+B.h/2,st:'idle',enr:1,stA:0};
-      if(id===9){try{shadowInit(e,{F:S/2+B.h/2,arena:{x:0,y:S/2+B.h/2,w:S},lvl:9});}catch(er){}}
+    else{const bid=id==='R'?9:id,B=BOSSES[bid],s=Math.min(2.4,120/Math.max(B.w,B.h));const e={type:'boss',boss:bid+1,name:B.n,col:B.col,x:S/2,y:S/2,sx:S/2,sy:S/2,w:B.w,h:B.h,hp:B.hp,max:B.hp,dir:1,t:1,cd:9,vy:0,kx:0,hit:0,slow:0,tp:3,F:S/2+B.h/2,st:'idle',enr:1,stA:0};
+      if(id===9||id==='R'){try{shadowInit(e,{F:S/2+B.h/2,arena:{x:0,y:S/2+B.h/2,w:S},lvl:9});}catch(er){}e.x=S/2;e.y=S/2;e.og=1;e.vx=id==='R'?300:0;e.run=id==='R'?1.1:0;e.face=1;}
       A.setTransform(s,0,0,s,S/2*(1-s),S/2*(1-s));drawBoss(e);}
   }catch(er){ok=false;}finally{ctx=old;T=oT;}
   A.setTransform(1,0,0,1,0,0);const im=A.getImageData(0,0,S,S),d=im.data;let x0=S,y0=S,x1=0,y1=0;
@@ -4168,7 +4173,7 @@ function hallStatue(id){if(HALL.cache[id])return HALL.cache[id];const S=380,c=do
   if(!ok||x1<=x0){x0=S/2-40;x1=S/2+40;y0=S/2-60;y1=S/2+60;A.fillStyle='#b8b0a0';A.fillRect(x0,y0,80,120);}else A.putImageData(im,0,0);
   const out=document.createElement('canvas');out.width=x1-x0+1;out.height=y1-y0+1;out.getContext('2d').drawImage(c,x0,y0,out.width,out.height,0,0,out.width,out.height);
   return HALL.cache[id]={c:out,w:out.width,h:out.height};}
-function hallDrawBack(){if(mode!=='rush'||!HALL)return;const F=START_Y,inHall=HALL.st==='hall',x0=inHall?camX-20:-20,x1=inHall?camX+W+20:820;
+function hallDrawBack(){if(mode!=='rush'||!HALL||HALL.st==='race')return;const F=START_Y,inHall=HALL.st==='hall',x0=inHall?camX-20:-20,x1=inHall?camX+W+20:820;
   // stone wall
   const g=ctx.createLinearGradient(0,-100,0,F);g.addColorStop(0,'#1e1630');g.addColorStop(1,'#3a2e4e');ctx.fillStyle=g;ctx.fillRect(x0,-100,x1-x0,F+300);
   ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=1.5;ctx.beginPath();for(let y=F-30;y>-100;y-=30){ctx.moveTo(x0,y);ctx.lineTo(x1,y);for(let x=Math.floor(x0/60)*60+((y/30)%2?30:0);x<x1;x+=60){ctx.moveTo(x,y);ctx.lineTo(x,y+30);}}ctx.stroke();
@@ -4203,7 +4208,7 @@ function hallDrawBack(){if(mode!=='rush'||!HALL)return;const F=START_Y,inHall=HA
       ctx.fillStyle='#6a6e7a';for(const yy of[gy+90,F-90]){ctx.fillRect(dx,yy,dw,10);}ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(s2>0?dx+dw-14:dx+14,F-170,6,0,7);ctx.fill();}
     ctx.restore();ctx.strokeStyle='#ffd23f';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(gx,F);ctx.lineTo(gx,gy+gw/2);ctx.arc(gx+gw/2,gy+gw/2,gw/2,Math.PI,0);ctx.lineTo(gx+gw,F);ctx.stroke();
     ctx.shadowColor='#c58bff';ctx.shadowBlur=12;ctx.fillStyle='#e8d8ff';ctx.font='bold 22px Trebuchet MS';ctx.textAlign='center';ctx.fillText('♛ BOSS RUSH ♛',gx+gw/2,gy-8);ctx.shadowBlur=0;
-    ctx.font='12px Trebuchet MS';ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('level '+((SAVE.br||0)+1)+' · all '+HALL_LIST.length+' bosses in a row',gx+gw/2,gy+12);}
+    ctx.font='12px Trebuchet MS';ctx.fillStyle='rgba(255,255,255,.75)';ctx.fillText('level '+((SAVE.br||0)+1)+' · all '+RUSHL.length+' bosses in a row',gx+gw/2,gy+12);}
   ctx.lineWidth=1;}
 function box3(x,y,w,h){const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,'#cfc6dc');g.addColorStop(1,'#7e7492');ctx.fillStyle=g;rr(x,y,w,h,3);ctx.fill();ctx.strokeStyle=POL;ctx.lineWidth=2;ctx.stroke();}
 function lgr(x0,y0,x1,y1,a,b){const g=ctx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,a);g.addColorStop(1,b);return g;}
